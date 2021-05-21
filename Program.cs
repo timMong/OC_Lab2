@@ -6,16 +6,17 @@ using System.Text;
 using System.Security.Cryptography;
 using System.Threading;
 
-namespace Threads
+namespace _2222_____
 {
+
     class Program
     {
-        static int GLOBAL_COUNT;
-        static bool GLOBAL_CHECK = false;
-        static int I = 0, J = 0, K = 0, M = 0, N = 0;
-        static int GLOBAL_ARR_0 = 3;
-        static int GLOBAL_ARR_1 = 3;
-        static int GLOBAL_ARR_2 = 3;
+        static string[] hashes = {"1115dd800feaacefdf481f1f9070374a2a81e27880f187396db67958b207cbad",//zyzzx
+                               "3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b",//apple
+                               "74e1bb62f8dabb8125a58852b63bdf6eaef667cb56ac7f7cdba6d7305c50a22f"};//mmmmm
+        static string NUM_OF_THREADS;
+        static int NUM_OF_FOUNDED_HASHES;
+        static Stopwatch stopWatch = new Stopwatch();
         public static string Encrypt(string pass)
         {
             try
@@ -33,45 +34,23 @@ namespace Threads
         public static bool Checking(string mayBePass)
         {
             bool check = false;
-            // хэш функции паролей
-            string[] hashes = {"6e1661b05ffa06fabf1d96caf4963ac628d01d1fbd55af7f12a5b3e48ed8e677", // aaabe
-                               "58b115add043566ca34f486d4ca99f17e6b1019f8a573464906133ae4c6dbeae", // aaabi
-                               "74e1bb62f8dabb8125a58852b63bdf6eaef667cb56ac7f7cdba6d7305c50a22f"};
-
-            //1115dd800feaacefdf481f1f9070374a2a81e27880f187396db67958b207cbad - 1 ориг
-            //3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b - 2 ориг
-            //6ea6115bab5f26516ec79af84239b082a44654ddc87c4a85af8e5b5cc1ec4a02 - aabbb
-
-            if (GLOBAL_ARR_0 != 3)
-                Array.Clear(hashes, 0, 1);
-            if (GLOBAL_ARR_1 != 3)
-                Array.Clear(hashes, 1, 1);
-            if (GLOBAL_ARR_2 != 3)
-                Array.Clear(hashes, 2, 1);
-            //если хэш пароля совпадает с хэшом ВОЗМОЖОГО пароля - мы нашли пароль, иначе  - не нашли
-            for (int i = 0; i < hashes.Length; i++)
+            string hash = Encrypt(mayBePass);
+            for (int i = 0; i < 3; i++)
             {
-                if (hashes[i] == Encrypt(mayBePass))
+                if (hashes[i] == hash)
                 {
+                    Console.WriteLine("Пароль: " + mayBePass + " | Хэш: " + hashes[i]);
+                    NUM_OF_FOUNDED_HASHES++;
+                    hashes[i] = "";
                     check = true;
-                    Array.Clear(hashes, i, 1);
-                    GLOBAL_COUNT = i + 1;
-                    switch (i) 
-                    {
-                        case 0: GLOBAL_ARR_0 = 0; break;
-                        case 1: GLOBAL_ARR_1 = 1; break;
-                        case 2: GLOBAL_ARR_2 = 2; break;
-
-                    };
                     break;
                 }
                 else check = false;
             }
             return check;
         }
-        public static string NewWord(string mayBePass, int firstStep, int secondStep)
+        public static void NewWord(string mayBePass, int firstStep, int secondStep)
         {
-            string newPass = null;
             int i, j, k, m, n;
             const int sizeOfWord = 5;
             const int sizeOfAlphabet = 26;
@@ -82,113 +61,210 @@ namespace Threads
                 alphabet[i] = Convert.ToChar(alphabetStart + i);
             for (i = 0; i < sizeOfWord; i++) // заполняю массив символов символами переданного слова размера 5
                 arrPass[i] = mayBePass[i];
+            string newPass = null;
 
-            arrPass[4] = Convert.ToChar(Convert.ToInt32(arrPass[4]) + firstStep);
-            //////////////////////////////////
-           
-            for (i = I; i < sizeOfAlphabet; i++)    // выполняю метод грубого (полного) перебора
+            for (i = 0; i < sizeOfAlphabet; i++)    // выполняю метод грубого (полного) перебора
             {
                 arrPass[0] = alphabet[i];
-                for (j = J; j < sizeOfAlphabet; j++)
+                for (j = 0; j < sizeOfAlphabet; j++)
                 {
                     arrPass[1] = alphabet[j];
-                    for (k = K; k < sizeOfAlphabet; k++)
+                    for (k = 0; k < sizeOfAlphabet; k++)
                     {
                         arrPass[2] = alphabet[k];
-                        for (m = M; m < sizeOfAlphabet; m++)
+                        for (m = 0; m < sizeOfAlphabet; m++)
                         {
                             arrPass[3] = alphabet[m];
-                            for (n = N; n < sizeOfAlphabet; n += secondStep)
+                            for (n = firstStep; n < sizeOfAlphabet; n += secondStep)
                             {
-                                //Console.WriteLine("n = " + n + " | " + "secondStep = " + secondStep);
+                                //Номер - " + (n + n * m * 10 + n * m * k * 100 + n * m * k * j * 1000 + n * m * k * j * i * 10000)
                                 arrPass[4] = alphabet[n];
                                 newPass = new string(arrPass);
-                                //Console.WriteLine("Много циклов - " + newPass + " ЭТО НОМЕР ВТОРОЙ БУКВЫ - " + n);
-                                //////////////////////////////////////////////////////////////
-                                // можно функцию сделать, которая бы выводила все комбинации//
-                                //////////////////////////////////////////////////////////////
-                                if (Checking(newPass))
+                                Checking(newPass);
+                                if (NUM_OF_FOUNDED_HASHES == 3)
                                 {
-                                    I = i; J = j; K = k; M = m; N = n;
-                                    i = j = k = m = sizeOfAlphabet;
-                                    GLOBAL_CHECK = true;
-                                    break;
+                                    stopWatch.Stop();
+                                    TimeSpan ts = stopWatch.Elapsed;
+                                    string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                                                                        ts.Hours, ts.Minutes, ts.Seconds,
+                                                                        ts.Milliseconds / 10);
+
+                                    Console.WriteLine("RunTime " + elapsedTime);
+                                    return;
                                 }
-                                else continue;
                             }
                         }
                     }
                 }
             }
-           // Console.WriteLine("Возврат много циклов - " + newPass);
-            return newPass;
-
         }
-        public static int Fun(int firstStep, int secondStep)
+        public static void Fun(object a)
         {
-            string mayBePass = "aaaaa"; // задал начальное слово при проверке пароля
-            int countOfMayBePass = 0;
-            int countOfGlobalCount = 0;
-            //bool check;  переменная для подтверждения того, что mayBePass = mayBePass
-
+            string mayBePass = "aaaaa"; // задал начальное слово
+            int fisrtStep = Convert.ToInt32(a);   // номер буквы, откуда начинаем стар
+            int secondStep = Convert.ToInt32(NUM_OF_THREADS);   // шаг, с которым потоки выбирют новую свою новую букву
             do //ищем пароль методом грубого перебора всех вариаций 5-буквенных слов и проверяем их
             {
-                mayBePass = NewWord(mayBePass, firstStep, secondStep); // задаем новую комбинацию
-                countOfMayBePass++;
-               // Console.WriteLine(countOfMayBePass + " | " + mayBePass + " | " + GLOBAL_CHECK + " | " + Encrypt(mayBePass));
-                if (GLOBAL_CHECK)
-                {
-                    Console.WriteLine($"Пароль по {GLOBAL_COUNT}-ому  хэшу: " + mayBePass);
-                    GLOBAL_COUNT = 0;
-                    countOfGlobalCount++;
-                }
-            } while (countOfGlobalCount != 3);
-            return countOfGlobalCount;
+                // задаем новую комбинацию
+                NewWord(mayBePass, fisrtStep, secondStep);
+            } while (NUM_OF_FOUNDED_HASHES != 3);
         }
-        delegate int FUN();
         static void Main(string[] args)
         {
-            // cоздаем новые потоки
-            Console.Write("Сколько создать дополнительных потоков? (0 - 4) Ответ: ");
-            string numOfThreads = Console.ReadLine();
-            Console.WriteLine();
-
-            // засекаем время
-            Stopwatch watch = new Stopwatch();
-            watch.Start();
-
-            if (Convert.ToInt32(numOfThreads) == 0)
+            Console.WriteLine($"! ЗДЕСЬ МОЖНО СОЗДАТЬ ДО {Environment.ProcessorCount} ПОТОКОВ !");
+            do
             {
-                Console.WriteLine("Создано 0 потоков!");
-                Fun(0, 1);
-            }
-            else
+                Console.Write("Сколько создать дополнительных потоков? ");
+                NUM_OF_THREADS = Console.ReadLine();
+            } while (Convert.ToInt32(NUM_OF_THREADS) >= 8);
+            Console.WriteLine($"Создан(о) {NUM_OF_THREADS} поток(ов)!");
+            stopWatch.Start();
+            switch (Convert.ToInt32(NUM_OF_THREADS))
             {
-               // Console.WriteLine($"Создано {Convert.ToInt32(numOfThreads)} потоков!");
-                /*Thread[] myThread = new Thread[Convert.ToInt32(numOfThreads)];
-                for (int i = 0; i < Convert.ToInt32(numOfThreads); i++)
-                {
-                    myThread[i] = new Thread(new ThreadStart(fun));
-                    myThread[i].Start();
-                    Console.WriteLine($"Работает {i+1} поток!");
-                }*/
-                FUN[] arrFUN = new FUN[Convert.ToInt32(numOfThreads)];
-                for (int i = 0; i < Convert.ToInt32(numOfThreads); i++)
-                {
-                    Console.WriteLine($"Начало {i + 1} потока!");
-                    arrFUN[i] = () => Fun(i, Convert.ToInt32(numOfThreads));         
-                    int count = arrFUN[i]();
-                    I = 0; J = 0; K = 0; M = 0; N = 0;
-                    if (count == 3) break;
-                    Console.WriteLine($"Конец {i + 1} потока!");
-                }  
+                case 0:
+                    {
+                        ParameterizedThreadStart paramThread1 = new ParameterizedThreadStart(Fun);
+                        Thread thread1 = new Thread(paramThread1);
+                        thread1.Start(0);
+                    }
+                    break;
+                case 1:
+                    {
+                        ParameterizedThreadStart paramThread1 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread2 = new ParameterizedThreadStart(Fun);
+                        Thread thread1 = new Thread(paramThread1);
+                        Thread thread2 = new Thread(paramThread2);
+                        thread1.Start(0);
+                        thread2.Start(1);
+                    }
+                    break;
+                case 2:
+                    {
+                        ParameterizedThreadStart paramThread1 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread2 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread3 = new ParameterizedThreadStart(Fun);
+                        Thread thread1 = new Thread(paramThread1);
+                        Thread thread2 = new Thread(paramThread2);
+                        Thread thread3 = new Thread(paramThread3);
+                        thread1.Start(0);
+                        thread2.Start(1);
+                        thread3.Start(2);
+                    }
+                    break;
+                case 3:
+                    {
+                        ParameterizedThreadStart paramThread1 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread2 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread3 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread4 = new ParameterizedThreadStart(Fun);
+                        Thread thread1 = new Thread(paramThread1);
+                        Thread thread2 = new Thread(paramThread2);
+                        Thread thread3 = new Thread(paramThread3);
+                        Thread thread4 = new Thread(paramThread4);
+                        thread1.Start(0);
+                        thread2.Start(1);
+                        thread3.Start(2);
+                        thread4.Start(3);
+                    }
+                    break;
+                case 4:
+                    {
+                        ParameterizedThreadStart paramThread1 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread2 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread3 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread4 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread5 = new ParameterizedThreadStart(Fun);
+                        Thread thread1 = new Thread(paramThread1);
+                        Thread thread2 = new Thread(paramThread2);
+                        Thread thread3 = new Thread(paramThread3);
+                        Thread thread4 = new Thread(paramThread4);
+                        Thread thread5 = new Thread(paramThread5);
+                        thread1.Start(0);
+                        thread2.Start(1);
+                        thread3.Start(2);
+                        thread4.Start(3);
+                        thread5.Start(4);
+                    }
+                    break;
+                case 5:
+                    {
+                        ParameterizedThreadStart paramThread1 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread2 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread3 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread4 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread5 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread6 = new ParameterizedThreadStart(Fun);
+                        Thread thread1 = new Thread(paramThread1);
+                        Thread thread2 = new Thread(paramThread2);
+                        Thread thread3 = new Thread(paramThread3);
+                        Thread thread4 = new Thread(paramThread4);
+                        Thread thread5 = new Thread(paramThread5);
+                        Thread thread6 = new Thread(paramThread6);
+                        thread1.Start(0);
+                        thread2.Start(1);
+                        thread3.Start(2);
+                        thread4.Start(3);
+                        thread5.Start(4);
+                        thread6.Start(5);
+                    }
+                    break;
+                case 6:
+                    {
+                        ParameterizedThreadStart paramThread1 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread2 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread3 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread4 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread5 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread6 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread7 = new ParameterizedThreadStart(Fun);
+                        Thread thread1 = new Thread(paramThread1);
+                        Thread thread2 = new Thread(paramThread2);
+                        Thread thread3 = new Thread(paramThread3);
+                        Thread thread4 = new Thread(paramThread4);
+                        Thread thread5 = new Thread(paramThread5);
+                        Thread thread6 = new Thread(paramThread6);
+                        Thread thread7 = new Thread(paramThread7);
+                        thread1.Start(0);
+                        thread2.Start(1);
+                        thread3.Start(2);
+                        thread4.Start(3);
+                        thread5.Start(4);
+                        thread6.Start(5);
+                        thread7.Start(6);
+                    }
+                    break;
+                case 7:
+                    {
+                        ParameterizedThreadStart paramThread1 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread2 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread3 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread4 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread5 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread6 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread7 = new ParameterizedThreadStart(Fun);
+                        ParameterizedThreadStart paramThread8 = new ParameterizedThreadStart(Fun);
+                        Thread thread1 = new Thread(paramThread1);
+                        Thread thread2 = new Thread(paramThread2);
+                        Thread thread3 = new Thread(paramThread3);
+                        Thread thread4 = new Thread(paramThread4);
+                        Thread thread5 = new Thread(paramThread5);
+                        Thread thread6 = new Thread(paramThread6);
+                        Thread thread7 = new Thread(paramThread7);
+                        Thread thread8 = new Thread(paramThread8);
+                        thread1.Start(0);
+                        thread2.Start(1);
+                        thread3.Start(2);
+                        thread4.Start(3);
+                        thread5.Start(4);
+                        thread6.Start(5);
+                        thread7.Start(6);
+                        thread8.Start(7);
+                    }
+                    break;
+                default:
+                    Console.WriteLine("! ERROR !\n Введите приавильные данные !");
+                    break;
             }
-            watch.Stop();
-            Console.WriteLine(
-            "Время выполнения программы в миллисекундах : " + watch.ElapsedMilliseconds + "мс.\r\n" +
-            "Время выполнения программы в секундах : " + watch.Elapsed.Seconds + "сек.\r\n" +
-            "Время выполнения программы в Тиках :" + watch.ElapsedTicks + "\r\n"
-            );
         }
     }
 }
